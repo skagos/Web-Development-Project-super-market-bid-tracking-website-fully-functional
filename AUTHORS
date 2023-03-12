@@ -1,0 +1,25 @@
+import os
+
+pub fn main() {
+	r := os.execute("git log --reverse --format='%aN,%aE'")
+	if r.exit_code != 0 {
+		eprintln("error: code $r.exit_code: $r.output")
+	}
+
+	mut authors := map[string][]string{}
+	lines := r.output.split_into_lines()
+	for l in lines {
+		parts := l.split(',')
+		name := parts[0]
+		email := parts[1]
+		mut emails := authors[name]
+		if !(email in emails) {
+			emails << email
+		}
+		authors[name] = emails
+	}
+
+	for author, emails in authors {
+		println('$author ${emails.map('<$it>').join(' ')}')
+	}
+}
